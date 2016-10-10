@@ -3,7 +3,7 @@ using System.Collections;
 
 public class Movement : MonoBehaviour {
 
-	float moveSpeed;
+	public float moveSpeed;
 	Vector2 direction;
 
 
@@ -12,6 +12,10 @@ public class Movement : MonoBehaviour {
 	private float randomDelay;
 	private int noiseAction;
 	private Vector2 noisePos;
+
+	//Variables used for moving to other entities
+	private bool touchingOther;
+	private Transform otherEntity;
 
 	//initialisation function
 	void Start () {
@@ -23,7 +27,7 @@ public class Movement : MonoBehaviour {
 		
 	}
 
-	void RandomMovement()
+	public void RandomMovement()
 	{	
 
 		/*
@@ -40,22 +44,26 @@ public class Movement : MonoBehaviour {
 			//delayTimer reset
 			delayTimer = 0;
 			noiseAction = Random.Range (0,2);
-			randomDelay = (noiseAction == 0) ? Random.Range (0.5f, 3) : Random.Range (0.5f, 5);
-			noisePos = new Vector2 (Random.Range (transform.position.x + transform.localScale.x * 5, transform.position.x + transform.localScale.x * 5), Random.Range (transform.position.y + transform.localScale.y * 5, transform.position.y + transform.localScale.y * 5));
+			randomDelay = (noiseAction == 0) ? Random.Range (0.5f, 2) : Random.Range (0.5f, 3);
+			noisePos = new Vector2 (Random.Range (transform.position.x - transform.localScale.x * moveSpeed, transform.position.x + transform.localScale.x * moveSpeed), Random.Range (transform.position.y - transform.localScale.y * 5, transform.position.y + transform.localScale.y * 5));
 		}
 		else if (noiseAction == 1) {
 			MoveToPosition (noisePos);
 		}
 	}
 
-	Entity FindNearestEntity()
+	Entity FindNearestEntity(string entityType)
 	{
 		return null;
 	}
 
-	void MoveToEntity(Entity target)
+	public void MoveToEntity(Entity target)
 	{
-
+		if (!touchingOther) {
+			MoveToPosition (target.transform.localPosition);
+		} else if (transform.parent != otherEntity); {
+			transform.SetParent (otherEntity);
+		}
 	}
 
 	void MoveToPosition(Vector2 target)
@@ -67,9 +75,20 @@ public class Movement : MonoBehaviour {
 		 * Then local position is changed according to moveSpeed.
 		*/
 
-		Vector2 pos = transform.localPosition;
+		Vector2 pos = transform.position;
 		Vector2 direction = (target - pos).normalized;
-		transform.position = (pos + direction * transform.localScale.x*0.02f * moveSpeed);
+		if (Vector2.Distance (pos, target) > transform.localScale.x / 2) {
+			//Will stop moving towards position if position is within one radius of the entity's position
+			transform.position = (pos + direction * transform.localScale.x*0.02f * moveSpeed);
+		}
 	}
+
+	void OnTriggerEnter2D(Collider2D col) {
+		if (col.gameObject.tag != this.tag) {
+			touchingOther = true;
+			otherEntity = col.transform;
+		}
+	}
+
 
 }
