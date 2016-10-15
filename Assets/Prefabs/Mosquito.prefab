@@ -24,7 +24,7 @@ GameObject:
   - 114: {fileID: 114000012250048732}
   - 114: {fileID: 114000011981845748}
   - 50: {fileID: 50000012227875358}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Mosquito
   m_TagString: Mosquito
   m_Icon: {fileID: 0}

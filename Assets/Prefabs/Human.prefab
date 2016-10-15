@@ -24,7 +24,7 @@ GameObject:
   - 114: {fileID: 114000013868871100}
   - 114: {fileID: 114000013184926390}
   - 50: {fileID: 50000011953366920}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Human
   m_TagString: Human
   m_Icon: {fileID: 0}
