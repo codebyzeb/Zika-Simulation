@@ -15,14 +15,14 @@ public class Entity {
 	{
 		ID = tempID;
 		tempID++;
-		age = 7;
+		age = 0;
 		movement = transform.gameObject.GetComponent<Movement> ();
 		infection = transform.gameObject.GetComponent<Infection> ();
 	}
 
 	public void IncreaseAge()
 	{
-
+		age++;
 	}
 
 	public void Reproduce()
@@ -39,7 +39,9 @@ public class Human : Entity {
 
 [System.Serializable]
 public class Mosquito : Entity {
+	void Bite() {
 
+	}
 }
 
 
@@ -47,20 +49,34 @@ public class GameController : MonoBehaviour {
 
 	Camera camera;
 
-	public Human human;
-	public Mosquito mosquito;
+	public Human[] humans;
+	public Mosquito[] mosquitos;
 
 	// Use this for initialization
 	void Start () {
 		camera = GetComponent<Camera> ();
-		human.Initialise ();
-		mosquito.Initialise ();
+		foreach (Human human in humans) {
+			human.Initialise ();
+		}
+		foreach (Mosquito mosquito in mosquitos) {
+			mosquito.Initialise ();
+		}
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		Vector3 mousePos = camera.ScreenToWorldPoint (Input.mousePosition);
-		human.transform.position = new Vector2(mousePos.x, mousePos.y);
-		mosquito.movement.MoveToEntity (human);
+		Test1 ();
 	}
+
+	void Test1 () {
+		foreach (Human human in humans) {
+			human.movement.RandomMovement ();
+		}
+		foreach (Mosquito mosquito in mosquitos) {
+			mosquito.movement.MoveToClosestEntity ("Human");
+		}
+	}
+		
+
+
 }

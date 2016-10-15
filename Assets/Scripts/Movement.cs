@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class Movement : MonoBehaviour {
 
@@ -15,11 +16,16 @@ public class Movement : MonoBehaviour {
 
 	//Variables used for moving to other entities
 	private bool touchingOther;
-	private Transform otherEntity;
+	private Transform touchingEntity;
+
+	private float updateClosestTimer;
+	private Transform closestEntity;
+
 
 	//initialisation function
 	void Start () {
-	
+		updateClosestTimer = 0.2f;
+		closestEntity = null;
 	}
 	
 	// Update is called once per frame
@@ -52,17 +58,108 @@ public class Movement : MonoBehaviour {
 		}
 	}
 
-	Entity FindNearestEntity(string entityType)
-	{
-		return null;
+	public void MoveToClosestEntity(string entityType) {
+
+		/*
+		 * Resets a timer every fixed time interval,
+		 * then moves to closest entity.
+		*/
+
+		delayTimer += Time.deltaTime;
+		if (delayTimer > updateClosestTimer) {
+			delayTimer = 0;
+			closestEntity = FindNearestEntity (entityType);
+		}
+		MoveToEntity (closestEntity);
 	}
 
-	public void MoveToEntity(Entity target)
+	public Transform FindNearestEntity(string entityType)
 	{
-		if (!touchingOther) {
-			MoveToPosition (target.transform.localPosition);
-		} else if (transform.parent != otherEntity); {
-			transform.SetParent (otherEntity);
+
+		/*
+		 * Function to find the nearest entity of type entityType.
+		 * First checks if there are any actual entities of entityType,
+		 * then operates main algorithm to find closest,
+		 * then operates backup algorithm to find closest of those found.
+		*/
+
+		int totalOtherEntities = GameObject.FindGameObjectsWithTag (entityType).Length;
+		if (totalOtherEntities == 0) {
+			//returns null if there are no entities to find.
+			return null;
+		}
+
+		List<Collider2D> nearbyColliders = new List<Collider2D>();
+		//starts with a small radius for the search
+		float radius = 2 * transform.localScale.x;
+		while (nearbyColliders.Count == 0) {
+			//Uses built-in unity function to find all colliders within a certain radius of the local position.
+			Collider2D[] nearbyCollidersTemp = Physics2D.OverlapCircleAll (transform.position, radius);
+			foreach (Collider2D collider in nearbyCollidersTemp) {
+ 				if (collider.tag == entityType) {
+					//adds collider to the list if it is of type entityType
+					nearbyColliders.Add (collider);
+				}
+			}
+			if (radius > transform.localScale.x * 100) {
+				//error check if none found within 100 diameters
+				print ("Error: none found");
+				break;
+			}
+			radius += 2 * transform.localScale.x;
+		}
+
+		if (nearbyColliders.Count == 1) {
+			//If only one found, returns it.
+			return nearbyColliders [0].transform;
+		} else if (nearbyColliders.Count > 1) {
+			//If many found, use secondary algorithm to find closest of those.
+			return FindClosestOfList (nearbyColliders);
+		} else {
+			//If none found, return null (this shouldn't be triggered)
+			return null;
+		}
+		
+	}
+
+	Transform FindClosestOfList(List<Collider2D> colliders)
+	{
+
+		/*
+		 * Secondary algorith to find closest entity.
+		 * Sets smallest distance to infinity and closestTransform to null.
+		 * Then iterates through each collider in the list, finds the distance from this position
+		 * and sets closestTransform to that collider's transform if it is the closest.
+		*/
+
+		float dist = Mathf.Infinity;
+		Transform closestTransform = null;
+
+		foreach (Collider2D collider in colliders) {
+			float tempDist = Vector2.Distance (transform.position, collider.transform.position);
+			if (tempDist < dist) {
+				dist = tempDist;
+				closestTransform = collider.transform;
+			}
+		}
+
+		return closestTransform;
+	}
+
+	public void MoveToEntity(Transform target)
+	{
+
+		/*
+		 * If not touching another entity, move towards the entity.
+		 * Else, set the local transform's parent to be the object that 
+		 * it is touching; this binds the location to the location of the other object.
+		*/
+		if (target != null) {
+			if (!touchingOther) {
+				MoveToPosition (target.transform.localPosition);
+			} else if (transform.parent != touchingEntity) {
+				transform.SetParent (touchingEntity);
+			}
 		}
 	}
 
@@ -84,9 +181,17 @@ public class Movement : MonoBehaviour {
 	}
 
 	void OnTriggerEnter2D(Collider2D col) {
-		if (col.gameObject.tag != this.tag) {
+		
+		/*
+		 * This is a built in function called by Unity when another object
+		 * enters this object's collider, which has been set to a circle around
+		 * the object's sprite.
+		 * I have set this function to set touchingOther to true and set the pointer
+		 * touchingEntity to the transform of the other object.
+		*/
+		if (col.gameObject.tag != this.tag && !touchingOther) {
 			touchingOther = true;
-			otherEntity = col.transform;
+			touchingEntity = col.transform;
 		}
 	}
 
