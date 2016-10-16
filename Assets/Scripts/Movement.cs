@@ -4,9 +4,10 @@ using System.Collections.Generic;
 
 public class Movement : MonoBehaviour {
 
+	//Basic movement variables
 	public float moveSpeed;
 	Vector2 direction;
-
+	Entity self; //A pointer to the entity which this movement script refers to
 
 	//Variables used for RandomMovement()
 	private float delayTimer;
@@ -18,19 +19,33 @@ public class Movement : MonoBehaviour {
 	private bool touchingOther;
 	private Transform touchingEntity;
 
+	//Variables used for finding closest Entity
 	private float updateClosestTimer;
 	private Transform closestEntity;
 
 
 	//initialisation function
-	void Start () {
-		updateClosestTimer = 0.2f;
-		closestEntity = null;
+	void Start ()
+	{
+		
 	}
 	
 	// Update is called once per frame
-	void Update () {
+	void Update ()
+	{
 		
+	}
+
+	public void Initialise(Entity temp)
+	{
+
+		/* 
+		 * Initialises the movement script by setting up some values.
+		*/
+
+		updateClosestTimer = 0.2f;
+		closestEntity = null;
+		self = temp;
 	}
 
 	public void RandomMovement()
@@ -58,7 +73,8 @@ public class Movement : MonoBehaviour {
 		}
 	}
 
-	public void MoveToClosestEntity(string entityType) {
+	public void MoveToClosestEntity(string entityType)
+	{
 
 		/*
 		 * Resets a timer every fixed time interval,
@@ -154,6 +170,7 @@ public class Movement : MonoBehaviour {
 		 * Else, set the local transform's parent to be the object that 
 		 * it is touching; this binds the location to the location of the other object.
 		*/
+
 		if (target != null) {
 			if (!touchingOther) {
 				MoveToPosition (target.transform.localPosition);
@@ -180,7 +197,52 @@ public class Movement : MonoBehaviour {
 		}
 	}
 
-	void OnTriggerEnter2D(Collider2D col) {
+	public bool Attached()
+	{
+
+		/* 
+		 * Returns whether or not the object is attached 
+		*/ 
+
+		return touchingOther;
+	}
+
+	public Entity getTouchingEntity()
+	{
+
+		/* 
+		 * This function returns the entity that this entity it touching,
+		 * by finding the pointer in the entity's movement componenet. A try/catch
+		 * validation is used to prevent a crash if a movement script is not found.
+		 */
+
+		try
+		{
+			return touchingEntity.GetComponent<Movement> ().self;
+		}
+		catch (System.Exception e) {
+			Debug.Log (e + " Exception caught.");
+		}
+		return null;
+	}
+
+	public void Detach()
+	{
+
+		/* 
+		 * This function simply detaches the object from the object it is connected to,
+		 * this is done by setting its transforms parent to null and retaining its
+		 * current position. touchingOther is also set to false.
+		*/
+
+		Vector2 currentPos = transform.position;
+		transform.SetParent (null);
+		transform.position = currentPos;
+		touchingOther = false;
+	}
+
+	void OnTriggerStay2D(Collider2D col)
+	{
 		
 		/*
 		 * This is a built in function called by Unity when another object
@@ -189,9 +251,12 @@ public class Movement : MonoBehaviour {
 		 * I have set this function to set touchingOther to true and set the pointer
 		 * touchingEntity to the transform of the other object.
 		*/
-		if (col.gameObject.tag != this.tag && !touchingOther) {
-			touchingOther = true;
-			touchingEntity = col.transform;
+
+		if (!touchingOther) {
+			if (col.gameObject.tag != this.tag) {
+				touchingOther = true;
+				touchingEntity = col.transform;
+			}
 		}
 	}
 
