@@ -18,7 +18,7 @@ public class Infection : MonoBehaviour {
 	
 	}
 
-	void Initialise (float tChance, float rChance, float dChance)
+	public void Initialise (float tChance, float rChance, float dChance)
 	{
 
 		/*

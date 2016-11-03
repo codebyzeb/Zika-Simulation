@@ -48,7 +48,7 @@ public class Movement : MonoBehaviour {
 		self = temp;
 	}
 
-	public void RandomMovement()
+	public void RandomMovement(float gameSpeed = 1)
 	{	
 
 		/*
@@ -66,14 +66,14 @@ public class Movement : MonoBehaviour {
 			delayTimer = 0;
 			noiseAction = Random.Range (0,2);
 			randomDelay = (noiseAction == 0) ? Random.Range (0.5f, 2) : Random.Range (0.5f, 3);
-			noisePos = new Vector2 (Random.Range (transform.position.x - transform.localScale.x * moveSpeed, transform.position.x + transform.localScale.x * moveSpeed), Random.Range (transform.position.y - transform.localScale.y * 5, transform.position.y + transform.localScale.y * 5));
+			noisePos = new Vector2 (Random.Range (transform.position.x - transform.localScale.x * moveSpeed, transform.position.x + transform.localScale.x * moveSpeed), Random.Range (transform.position.y - transform.localScale.y * moveSpeed, transform.position.y + transform.localScale.y * moveSpeed));
 		}
 		else if (noiseAction == 1) {
-			MoveToPosition (noisePos);
+			MoveToPosition (noisePos, gameSpeed);
 		}
 	}
 
-	public void MoveToClosestEntity(string entityType)
+	public void MoveToClosestEntity(string entityType, float gameSpeed = 1)
 	{
 
 		/*
@@ -81,12 +81,12 @@ public class Movement : MonoBehaviour {
 		 * then moves to closest entity.
 		*/
 
-		delayTimer += Time.deltaTime;
+		delayTimer += Time.deltaTime*gameSpeed;
 		if (delayTimer > updateClosestTimer) {
 			delayTimer = 0;
 			closestEntity = FindNearestEntity (entityType);
 		}
-		MoveToEntity (closestEntity);
+		MoveToEntity (closestEntity, gameSpeed);
 	}
 
 	public Transform FindNearestEntity(string entityType)
@@ -162,7 +162,7 @@ public class Movement : MonoBehaviour {
 		return closestTransform;
 	}
 
-	public void MoveToEntity(Transform target)
+	public void MoveToEntity(Transform target, float gameSpeed = 1)
 	{
 
 		/*
@@ -173,14 +173,14 @@ public class Movement : MonoBehaviour {
 
 		if (target != null) {
 			if (!touchingOther) {
-				MoveToPosition (target.transform.localPosition);
+				MoveToPosition (target.transform.localPosition, gameSpeed);
 			} else if (transform.parent != touchingEntity) {
 				transform.SetParent (touchingEntity);
 			}
 		}
 	}
 
-	void MoveToPosition(Vector2 target)
+	void MoveToPosition(Vector2 target, float gameSpeed = 1)
 	{
 
 		/*
@@ -191,9 +191,9 @@ public class Movement : MonoBehaviour {
 
 		Vector2 pos = transform.position;
 		Vector2 direction = (target - pos).normalized;
-		if (Vector2.Distance (pos, target) > transform.localScale.x / 2) {
+		if (Vector2.Distance (pos, target) > transform.localScale.x) {
 			//Will stop moving towards position if position is within one radius of the entity's position
-			transform.position = (pos + direction * transform.localScale.x*0.02f * moveSpeed);
+			transform.position = (pos + direction * transform.localScale.x*0.02f * moveSpeed*gameSpeed);
 		}
 	}
 
