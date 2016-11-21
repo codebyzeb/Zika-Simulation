@@ -12,12 +12,12 @@ public class Movement : MonoBehaviour {
 	//Variables used for RandomMovement()
 	private float delayTimer;
 	private float randomDelay;
-	private int noiseAction;
+	private float noiseAction;
 	private Vector2 noisePos;
 
 	//Variables used for moving to other entities
-	private bool touchingOther;
-	private Transform touchingEntity;
+	public bool touchingOther;
+	public Transform touchingEntity;
 
 	//Variables used for finding closest Entity
 	private float updateClosestTimer;
@@ -60,15 +60,15 @@ public class Movement : MonoBehaviour {
 		*/
 
 		//delayTimer increased while RandomMovement called
-		delayTimer += Time.deltaTime;
+		delayTimer += Time.deltaTime*gameSpeed;
 		if (delayTimer > randomDelay) {
 			//delayTimer reset
 			delayTimer = 0;
-			noiseAction = Random.Range (0,2);
-			randomDelay = (noiseAction == 0) ? Random.Range (0.5f, 2) : Random.Range (0.5f, 3);
+			noiseAction = Random.value;
+			randomDelay = (noiseAction < 0.4f) ? Random.Range (0.5f, 2) : Random.Range (0.5f, 3);
 			noisePos = new Vector2 (Random.Range (transform.position.x - transform.localScale.x * moveSpeed, transform.position.x + transform.localScale.x * moveSpeed), Random.Range (transform.position.y - transform.localScale.y * moveSpeed, transform.position.y + transform.localScale.y * moveSpeed));
 		}
-		else if (noiseAction == 1) {
+		else if (noiseAction >= 0.4f) {
 			MoveToPosition (noisePos, gameSpeed);
 		}
 	}
@@ -117,12 +117,14 @@ public class Movement : MonoBehaviour {
 					nearbyColliders.Add (collider);
 				}
 			}
-			if (radius > transform.localScale.x * 100) {
+
+			if (radius > transform.localScale.x * 1000) {
 				//error check if none found within 100 diameters
-				print ("Error: none found");
+				print ("Error: none found, ID: " + self.ID.ToString());
 				break;
 			}
 			radius += 2 * transform.localScale.x;
+
 		}
 
 		if (nearbyColliders.Count == 1) {
@@ -239,6 +241,8 @@ public class Movement : MonoBehaviour {
 		transform.SetParent (null);
 		transform.position = currentPos;
 		touchingOther = false;
+		touchingEntity = null;
+
 	}
 
 	void OnTriggerStay2D(Collider2D col)

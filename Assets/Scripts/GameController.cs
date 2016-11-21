@@ -8,37 +8,46 @@ public class Entity {
 	private static int tempID;
 
 	public int ID;
-	public int age;
 	public Transform transform;
 	public Movement movement;
 	public Infection infection;
 	SpriteRenderer sprite;
 
+	protected bool startOfDay;
+	protected float delayTimer;
+
 	public void Initialise()
 	{
 		ID = tempID;
 		tempID++;
-		age = 0;
 		movement = transform.gameObject.GetComponent<Movement> ();
 		movement.Initialise (this);
 		infection = transform.gameObject.GetComponent<Infection> ();
-		infection.Initialise (1, 0, 0);
+		infection.Initialise (1, 0.05f);
+		infection.ID = ID;
 		sprite = transform.gameObject.GetComponent<SpriteRenderer> ();
 	}
-
-	public void IncreaseAge()
-	{
-		age++;
-	}
-
-	public void Reproduce()
-	{
-
-	}
-
+		
 	public void Live(float gameSpeed) {
-		movement.RandomMovement (gameSpeed);
+
+		if (startOfDay) {
+			delayTimer += Time.deltaTime*gameSpeed;
+			if (delayTimer >= 0) {
+				doDailyActions ();
+				startOfDay = false;
+			}
+		}
+
 		ManageGraphics ();
+	}
+
+	public void startDailyActionsTimer(float dayLength) {
+		startOfDay = true;
+		delayTimer = -(Random.Range (0, 0.5f * dayLength));
+	}
+
+	protected void doDailyActions () {
+		infection.tryRecovery ();
 	}
 
 	public void ManageGraphics() {
@@ -50,6 +59,11 @@ public class Entity {
 [System.Serializable]
 public class Human : Entity {
 
+	new public void Live(float gameSpeed) {
+		base.Live (gameSpeed);
+		movement.RandomMovement (gameSpeed);
+	}
+
 }
 
 [System.Serializable]
@@ -59,12 +73,11 @@ public class Mosquito : Entity {
 	private int bitePhase;
 
 	public float biteLength;
-	private float delayTimer;
 
 	new public void Initialise() {
 		base.Initialise ();
 		biteLength = 0.5f;
-		biteRate = 0.1f;
+		biteRate = 0.6f;
 	}
 
 	public void decideBiting() {
@@ -72,17 +85,28 @@ public class Mosquito : Entity {
 			float randNum = Random.value;
 			if (randNum <= biteRate) {
 				bitePhase = 1;
+				movement.Detach ();
 			}
 		}
 	}
 		
 	new public void Live(float gameSpeed) {
 
+		if (startOfDay) {
+			delayTimer += Time.deltaTime*gameSpeed;
+			if (delayTimer >= 0) {
+				doDailyActions ();
+				decideBiting ();
+				startOfDay = false;
+			}
+		}
+
 		if (bitePhase == 1) {
 			movement.MoveToClosestEntity ("Human", gameSpeed);
 			if (movement.Attached ()) {
 				bitePhase = 2;
 				delayTimer = 0;
+				Debug.Log (ID + " now touching " + movement.getTouchingEntity ().ID);
 			}
 		} else if (bitePhase == 2) {
 			delayTimer += Time.deltaTime*gameSpeed;
@@ -99,6 +123,7 @@ public class Mosquito : Entity {
 		ManageGraphics ();
 
 	}
+
 }
 
 
@@ -112,7 +137,7 @@ public class GameController : MonoBehaviour {
 	public List<Transform> humansTemp;
 	public List<Transform> mosquitosTemp;
 
-	//Variables declareed
+	//Variables declared
 
 	Camera camera;
 	public float gameSpeed, savedGameSpeed;
@@ -121,11 +146,13 @@ public class GameController : MonoBehaviour {
 	float dayLength;
 
 	bool paused;
+	bool isActive;
 
 	//UI elements
 
 	public Button pauseButton, fasterButton, slowerButton, speedButton;
 	public Text speedText, pauseText;
+	public UIManager UI;
 
 	// Initialisation of simulation
 	void Start () {
@@ -140,7 +167,28 @@ public class GameController : MonoBehaviour {
 		paused = false;
 
 		globalTimer = 0;
-		dayLength = 1;
+		dayLength = 5;
+
+		//Initialising Simulation
+
+		OldInitialisation ();
+
+		/*
+		 * UI Initialisation
+		 */
+
+		speedText = speedButton.GetComponentInChildren<Text> ();
+		pauseText = pauseButton.GetComponentInChildren<Text> ();
+		UI = GetComponent<UIManager> ();
+		UI.InitialiseCamera ();
+
+	}
+
+	public void Initialise () {
+
+	}
+
+	void OldInitialisation () {
 
 		/*
 		 * Each transform in humanTemp initialised as a Human object
@@ -148,7 +196,7 @@ public class GameController : MonoBehaviour {
 		 * each transform in mosquitoTemp intialised as a Mosquito object
 		 * and added to the list mosquitos.
 		 */
-
+		
 		foreach (Transform humanTemp in humansTemp) {
 			Human human = new Human ();
 			human.transform = humanTemp;
@@ -162,19 +210,35 @@ public class GameController : MonoBehaviour {
 			mosquitos.Add (mosquito);
 		}
 
-		/*
-		 * UI Initialisation
-		 */
-
-		speedText = speedButton.GetComponentInChildren<Text> ();
-		pauseText = pauseButton.GetComponentInChildren<Text> ();
-
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		Test2 ();
-		ControlPanel ();
+		if (isActive) {
+			MainSimulation ();
+			ControlPanel ();
+			UI.UpdateCamera ();
+		}
+	}
+
+	void MainSimulation () {
+		globalTimer += Time.deltaTime*gameSpeed;
+		if (globalTimer > dayLength) {
+			foreach (Mosquito mosquito in mosquitos) {
+				mosquito.startDailyActionsTimer (dayLength);
+			}
+			foreach (Human human in humans) {
+				human.startDailyActionsTimer (dayLength);
+			}
+			globalTimer = 0;
+		}
+
+		foreach (Human human in humans) {
+			human.Live (gameSpeed);
+		}
+		foreach (Mosquito mosquito in mosquitos) {
+			mosquito.Live (gameSpeed);
+		}
 	}
 
 	void ControlPanel() {
@@ -212,6 +276,10 @@ public class GameController : MonoBehaviour {
 			gameSpeed = 0;
 			paused = true;
 		}
+	}
+
+	public void SetActivity (bool active) {
+		isActive = active;
 	}
 
 	void Test1 () {

@@ -7,18 +7,9 @@ public class Infection : MonoBehaviour {
 	float transmissionChance; //Chance that this entity gets infected during transfer
 	float recoveryChance;
 	float deathChance;
+	public int ID;
 
-	// Use this for initialization
-	void Start () {
-	
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
-
-	public void Initialise (float tChance, float rChance, float dChance)
+	public void Initialise (float tChance, float rChance)
 	{
 
 		/*
@@ -27,7 +18,6 @@ public class Infection : MonoBehaviour {
 
 		transmissionChance = tChance;
 		recoveryChance = rChance;
-		deathChance = dChance;
 	}
 
 	public void TransmitInfection(Entity other)
@@ -84,21 +74,5 @@ public class Infection : MonoBehaviour {
 		}
 		return false;
 	}
-
-	public bool getFatality()
-	{
-
-		/*
-		 * Creates a random number between 0 and 1.
-		 * If the number is less than deathChance, 
-		 * then returns true. UNUSED SO FAR, MUST RESEARCH
-		*/
-
-		float randNum = Random.value;
-		if (randNum <= deathChance) {
-			return true;
-		} else {
-			return false;
-		}
-	}
+		
 }
