@@ -16,10 +16,9 @@ public class UIManager : MonoBehaviour {
 
 	//Dynamic movement variables
 	Vector3 mousePosOriginal;
-	float dragSpeed;
 	float cameraMoveSpeed;
 
-	public void InitialiseCamera () {
+	public void InitialiseCamera (float minZoomTemp = 100, float maxZoomTemp = 2000, float defaultZoomTemp = 400) {
 
 		/*
 		 * Initialises camera
@@ -27,9 +26,9 @@ public class UIManager : MonoBehaviour {
 
 		minZoom = 100;
 		maxZoom = 2000;
-		dragSpeed = 10;
 		cam = GetComponent<Camera> ();
-		defaultZoom = cam.orthographicSize;
+		defaultZoom = defaultZoomTemp;
+		cam.orthographicSize = defaultZoomTemp;
 	}
 
 	public void UpdateCamera () {
@@ -152,7 +151,7 @@ public class UIManager : MonoBehaviour {
 		if (Input.GetMouseButton (1)) {
 			//Camera translated based on distance dragged away from origin point and dragSpeed
 			Vector3 mousePos = Camera.main.ScreenToViewportPoint(Input.mousePosition-mousePosOriginal);
-			Vector3 move = new Vector3(mousePos.x * dragSpeed, mousePos.y * dragSpeed, 0);
+			Vector3 move = new Vector3(mousePos.x * cameraMoveSpeed, mousePos.y * cameraMoveSpeed, 0);
 
 			transform.Translate(move, Space.World); 
 		}

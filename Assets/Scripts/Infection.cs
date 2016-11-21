@@ -9,7 +9,7 @@ public class Infection : MonoBehaviour {
 	float deathChance;
 	public int ID;
 
-	public void Initialise (float tChance, float rChance)
+	public void Initialise (float tChance, float rChance, bool infectedTemp = false)
 	{
 
 		/*
@@ -18,6 +18,7 @@ public class Infection : MonoBehaviour {
 
 		transmissionChance = tChance;
 		recoveryChance = rChance;
+		infected = infectedTemp;
 	}
 
 	public void TransmitInfection(Entity other)

@@ -16,16 +16,45 @@ public class Entity {
 	protected bool startOfDay;
 	protected float delayTimer;
 
-	public void Initialise()
+	public Entity(Transform transformTemp, bool infected, float recoveryRate, float transferChance, float moveSpeed)
 	{
+		transform = transformTemp;
+
+		//Creates an ID for the entity
 		ID = tempID;
 		tempID++;
+
+		//Sets up movement composite object
 		movement = transform.gameObject.GetComponent<Movement> ();
-		movement.Initialise (this);
+		movement.Initialise (this, moveSpeed);
+
+		//Sets up infection composite object
 		infection = transform.gameObject.GetComponent<Infection> ();
-		infection.Initialise (1, 0.05f);
+		infection.Initialise (transferChance, recoveryRate, infected);
 		infection.ID = ID;
+
 		sprite = transform.gameObject.GetComponent<SpriteRenderer> ();
+	}
+
+	public Entity (Transform transformTemp) {
+		
+		transform = transformTemp;
+
+		//Creates an ID for the entity
+		ID = tempID;
+		tempID++;
+
+		//Sets up movement composite object
+		movement = transform.gameObject.GetComponent<Movement> ();
+		movement.Initialise (this, 0);
+
+		//Sets up infection composite object
+		infection = transform.gameObject.GetComponent<Infection> ();
+		infection.Initialise (1, 0, false);
+		infection.ID = ID;
+
+		sprite = transform.gameObject.GetComponent<SpriteRenderer> ();
+
 	}
 		
 	public void Live(float gameSpeed) {
@@ -59,6 +88,14 @@ public class Entity {
 [System.Serializable]
 public class Human : Entity {
 
+	public Human (Transform transformTemp, bool infected, float recoveryRate, float transferChance, float moveSpeed) : base (transformTemp, infected, recoveryRate, transferChance, moveSpeed) { 
+		
+	}
+
+	public Human (Transform transformTemp) : base (transformTemp) {
+		
+	}
+
 	new public void Live(float gameSpeed) {
 		base.Live (gameSpeed);
 		movement.RandomMovement (gameSpeed);
@@ -74,8 +111,12 @@ public class Mosquito : Entity {
 
 	public float biteLength;
 
-	new public void Initialise() {
-		base.Initialise ();
+	public Mosquito (Transform transformTemp, bool infected, float recoveryRate, float transferChance, float moveSpeed, float biteRateTemp) : base(transformTemp, infected, recoveryRate, transferChance, moveSpeed) {
+		biteLength = 0.5f;
+		biteRate = biteRateTemp;
+	}
+
+	public Mosquito (Transform transformTemp) : base (transformTemp) {
 		biteLength = 0.5f;
 		biteRate = 0.6f;
 	}
@@ -106,7 +147,6 @@ public class Mosquito : Entity {
 			if (movement.Attached ()) {
 				bitePhase = 2;
 				delayTimer = 0;
-				Debug.Log (ID + " now touching " + movement.getTouchingEntity ().ID);
 			}
 		} else if (bitePhase == 2) {
 			delayTimer += Time.deltaTime*gameSpeed;
@@ -137,7 +177,7 @@ public class GameController : MonoBehaviour {
 	public List<Transform> humansTemp;
 	public List<Transform> mosquitosTemp;
 
-	//Variables declared
+	//Simulation variables
 
 	Camera camera;
 	public float gameSpeed, savedGameSpeed;
@@ -148,11 +188,23 @@ public class GameController : MonoBehaviour {
 	bool paused;
 	bool isActive;
 
+	public GameObject humanPrefab, mosquitoPrefab;
+
+	//Simulation data
+
+	int hNum;
+	float hTransferChance, hInfected, hRecoveryRate;
+	float hMoveSpeed = 5;
+	int mNum;
+	float mTransferChance, mInfected, mRecoveryRate, mBiteRate;
+	float mMoveSpeed = 20;
+
 	//UI elements
 
 	public Button pauseButton, fasterButton, slowerButton, speedButton;
 	public Text speedText, pauseText;
-	public UIManager UI;
+	UIManager UI;
+	public InputManager inputMenu;
 
 	// Initialisation of simulation
 	void Start () {
@@ -169,8 +221,6 @@ public class GameController : MonoBehaviour {
 		globalTimer = 0;
 		dayLength = 5;
 
-		//Initialising Simulation
-
 		OldInitialisation ();
 
 		/*
@@ -180,11 +230,6 @@ public class GameController : MonoBehaviour {
 		speedText = speedButton.GetComponentInChildren<Text> ();
 		pauseText = pauseButton.GetComponentInChildren<Text> ();
 		UI = GetComponent<UIManager> ();
-		UI.InitialiseCamera ();
-
-	}
-
-	public void Initialise () {
 
 	}
 
@@ -198,15 +243,11 @@ public class GameController : MonoBehaviour {
 		 */
 		
 		foreach (Transform humanTemp in humansTemp) {
-			Human human = new Human ();
-			human.transform = humanTemp;
-			human.Initialise ();
+			Human human = new Human (humanTemp);
 			humans.Add (human);
 		}
 		foreach (Transform mosquitoTemp in mosquitosTemp) {
-			Mosquito mosquito = new Mosquito ();
-			mosquito.transform = mosquitoTemp;
-			mosquito.Initialise ();
+			Mosquito mosquito = new Mosquito (mosquitoTemp);
 			mosquitos.Add (mosquito);
 		}
 
@@ -282,33 +323,62 @@ public class GameController : MonoBehaviour {
 		isActive = active;
 	}
 
-	void Test1 () {
-		foreach (Human human in humans) {
-			human.movement.RandomMovement ();
+	public void StartSimulation () {
+		ClearEntities ();
+
+		hNum = (int)inputMenu.humansInput ["Population Size"];
+		float hInfectedStart = inputMenu.humansInput ["Percentage Infected"];
+		hRecoveryRate = inputMenu.humansInput ["Percentage Recovery"];
+		hTransferChance = inputMenu.humansInput ["Transfer Chance"];
+
+		mNum = (int)inputMenu.mosquitosInput ["Population Size"];
+		float mInfectedStart = inputMenu.mosquitosInput ["Percentage Infected"];
+		mRecoveryRate = inputMenu.mosquitosInput ["Percentage Recovery"];
+		mTransferChance = inputMenu.mosquitosInput ["Transfer Chance"];
+		mBiteRate = inputMenu.mosquitosInput ["Bite Rate"];
+
+		float density = 1;
+		print (humanPrefab.transform.localScale.x);
+		float spawnSquare = humanPrefab.transform.localScale.x * 4 * Mathf.Sqrt (mNum) / density;
+		UI.InitialiseCamera (50, spawnSquare + 50, spawnSquare/2 + 50);
+
+		for (int i = 0; i < hNum; i++) {
+			bool infected = (float)i/hNum <= hInfectedStart ? true : false;
+
+			GameObject temp = (GameObject)Instantiate (humanPrefab);
+			Vector2 circle = Random.insideUnitCircle * spawnSquare;
+			temp.transform.localPosition = new Vector3 (circle.x, circle.y, 0);
+
+			Human human = new Human (temp.transform, infected, hRecoveryRate, hTransferChance, hMoveSpeed);
+
+			humans.Add (human);
 		}
-		foreach (Mosquito mosquito in mosquitos) {
-			mosquito.movement.MoveToClosestEntity ("Human");
+
+		for (int i = 0; i < mNum; i++) {
+			bool infected = (float)i/mNum < mInfectedStart ? true : false;
+
+			GameObject temp = (GameObject)Instantiate (mosquitoPrefab);
+			Vector2 circle = Random.insideUnitCircle * spawnSquare;
+			temp.transform.localPosition = new Vector3 (circle.x, circle.y, 0);
+
+			Mosquito mosquito = new Mosquito (temp.transform, infected, mRecoveryRate, mTransferChance, mMoveSpeed, mBiteRate);
+
+			mosquitos.Add (mosquito);
 		}
+
+		isActive = true;
+
 	}
 
-	void Test2 () {
-		globalTimer += Time.deltaTime*gameSpeed;
-		if (globalTimer > dayLength) {
-			foreach (Mosquito mosquito in mosquitos) {
-				mosquito.decideBiting ();
-			}
-			globalTimer = 0;
-		}
-
+	void ClearEntities () {
 		foreach (Human human in humans) {
-			human.Live (gameSpeed);
+			Destroy (human.transform.gameObject);
 		}
+		humans.Clear();
 		foreach (Mosquito mosquito in mosquitos) {
-			mosquito.Live (gameSpeed);
+			Destroy (mosquito.transform.gameObject);
 		}
-
+		mosquitos.Clear ();
 	}
-		
-
 
 }

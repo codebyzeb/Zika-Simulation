@@ -23,20 +23,7 @@ public class Movement : MonoBehaviour {
 	private float updateClosestTimer;
 	private Transform closestEntity;
 
-
-	//initialisation function
-	void Start ()
-	{
-		
-	}
-	
-	// Update is called once per frame
-	void Update ()
-	{
-		
-	}
-
-	public void Initialise(Entity temp)
+	public void Initialise(Entity temp, float moveSpeedTemp = 0)
 	{
 
 		/* 
@@ -46,6 +33,9 @@ public class Movement : MonoBehaviour {
 		updateClosestTimer = 0.2f;
 		closestEntity = null;
 		self = temp;
+		if (moveSpeed != 0) {
+			moveSpeed = moveSpeedTemp;
+		}
 	}
 
 	public void RandomMovement(float gameSpeed = 1)
