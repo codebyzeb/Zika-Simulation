@@ -14,10 +14,11 @@ public class SliderTextLink : MonoBehaviour {
 		slider.onValueChanged.AddListener (delegate {
 			ValueChangeCheck ();
 		});
+		ValueChangeCheck ();
 	}
 
 	public void ValueChangeCheck () {
-		text.text = defaultText + ": " + Mathf.Round (slider.value * 100) / 100;;
+		text.text = defaultText + ": " + Mathf.Round (slider.value * 100) / 100;
 	}
 }
 

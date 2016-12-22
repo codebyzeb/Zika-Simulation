@@ -19,7 +19,6 @@ public class Entity {
 	public Entity(Transform transformTemp, bool infected, float recoveryRate, float transferChance, float moveSpeed)
 	{
 		transform = transformTemp;
-
 		//Creates an ID for the entity
 		ID = tempID;
 		tempID++;
@@ -180,7 +179,7 @@ public class GameController : MonoBehaviour {
 	//Simulation variables
 
 	Camera camera;
-	public float gameSpeed, savedGameSpeed;
+	public float gameSpeed, savedGameSpeed, maxGameSpeed;
 
 	float globalTimer;
 	float dayLength;
@@ -193,11 +192,19 @@ public class GameController : MonoBehaviour {
 	//Simulation data
 
 	int hNum;
-	float hTransferChance, hInfected, hRecoveryRate;
+	float hTransferChance, hRecoveryRate;
 	float hMoveSpeed = 5;
+	float hDensity;
 	int mNum;
-	float mTransferChance, mInfected, mRecoveryRate, mBiteRate;
+	float mTransferChance, mRecoveryRate, mBiteRate;
 	float mMoveSpeed = 20;
+
+	//Equation data
+
+	float SIM_hInfected;
+	float SIM_mInfected;
+	float SIR_hInfected;
+	float SIR_mInfected;
 
 	//UI elements
 
@@ -205,6 +212,11 @@ public class GameController : MonoBehaviour {
 	public Text speedText, pauseText;
 	UIManager UI;
 	public InputManager inputMenu;
+	public GameObject equationPanel;
+	public Text equationsPanelButtonText;
+	public Text equationText;
+	public Text simulationText;
+	public Text errorText;
 
 	// Initialisation of simulation
 	void Start () {
@@ -216,6 +228,7 @@ public class GameController : MonoBehaviour {
 		camera = GetComponent<Camera> ();
 		gameSpeed = 1;
 		savedGameSpeed = 1;
+		maxGameSpeed = 5;
 		paused = false;
 
 		globalTimer = 0;
@@ -265,12 +278,29 @@ public class GameController : MonoBehaviour {
 	void MainSimulation () {
 		globalTimer += Time.deltaTime*gameSpeed;
 		if (globalTimer > dayLength) {
-			foreach (Mosquito mosquito in mosquitos) {
-				mosquito.startDailyActionsTimer (dayLength);
-			}
+			UpdateEquations ();
+
+			float numInfectedMosquitos = 0;
+			float numInfectedHumans = 0;
 			foreach (Human human in humans) {
 				human.startDailyActionsTimer (dayLength);
+				if (human.infection.infected) {
+					numInfectedHumans++;
+				}
 			}
+			foreach (Mosquito mosquito in mosquitos) {
+				mosquito.startDailyActionsTimer (dayLength);
+				if (mosquito.infection.infected) {
+					numInfectedMosquitos++;
+				}
+			}
+			SIM_hInfected = numInfectedHumans / hNum;
+			SIM_mInfected = numInfectedMosquitos / mNum;
+
+			equationText.text = "Percentage Infected Humans: " + (Mathf.Round (SIR_hInfected * 1000) / 10).ToString () + "%\nPercentage Infected Mosquitos: " + (Mathf.Round (SIR_mInfected * 1000) / 10).ToString () + "%";
+			simulationText.text = "Percentage Infected Humans: " + (Mathf.Round (SIM_hInfected * 1000) / 10).ToString () + "%\nPercentage Infected Mosquitos: " + (Mathf.Round (SIM_mInfected * 1000) / 10).ToString () + "%";
+			errorText.text = "Percentage Difference Humans: " + Mathf.Abs (Mathf.Round ((SIM_hInfected - SIR_hInfected) * 1000) / 10).ToString () + "%\nPercentage Difference Mosquitos: " + Mathf.Abs (Mathf.Round ((SIM_mInfected - SIR_mInfected) * 1000) / 10).ToString () + "%";
+
 			globalTimer = 0;
 		}
 
@@ -279,6 +309,27 @@ public class GameController : MonoBehaviour {
 		}
 		foreach (Mosquito mosquito in mosquitos) {
 			mosquito.Live (gameSpeed);
+		}
+	}
+
+	static bool firstRun = true;
+	void UpdateEquations () {
+		if (!firstRun) {
+			SIR_hInfected += (mNum / hNum) * mBiteRate * hTransferChance * SIR_mInfected * (1 - SIR_hInfected) - hRecoveryRate * SIR_hInfected;
+			SIR_mInfected += mBiteRate * mTransferChance * SIR_hInfected * (1 - SIR_mInfected) - mRecoveryRate * SIR_mInfected;
+		} else {
+			firstRun = false;
+		}
+	}
+
+	public void ToggleEquationsPanel () {
+		if (equationPanel.activeSelf) {
+			equationPanel.SetActive (false);
+			equationsPanelButtonText.text = "Show Comparison"; 
+		}
+		else {
+			equationPanel.SetActive (true);
+			equationsPanelButtonText.text = "Hide Comparison"; 
 		}
 	}
 
@@ -296,9 +347,13 @@ public class GameController : MonoBehaviour {
 
 		gameSpeed += amount;
 
+		//Clamp gameSpeed to be between 0 and maxGameSpeed
 		if (gameSpeed < 0) {
 			gameSpeed = 0;
+		} else if (gameSpeed > maxGameSpeed) {
+			gameSpeed = maxGameSpeed;
 		}
+
 	}
 
 	public void TogglePause () {
@@ -326,27 +381,29 @@ public class GameController : MonoBehaviour {
 	public void StartSimulation () {
 		ClearEntities ();
 
-		hNum = (int)inputMenu.humansInput ["Population Size"];
-		float hInfectedStart = inputMenu.humansInput ["Percentage Infected"];
-		hRecoveryRate = inputMenu.humansInput ["Percentage Recovery"];
-		hTransferChance = inputMenu.humansInput ["Transfer Chance"];
+		hNum = (int)Preset.current.humanData ["Population Size"];
+		float hInfectedStart = Preset.current.humanData ["Percentage Infected"];
+		hRecoveryRate = Preset.current.humanData ["Percentage Recovery"];
+		hTransferChance = Preset.current.humanData ["Transfer Chance"];
+		hDensity = Preset.current.humanData ["Density"];
 
-		mNum = (int)inputMenu.mosquitosInput ["Population Size"];
-		float mInfectedStart = inputMenu.mosquitosInput ["Percentage Infected"];
-		mRecoveryRate = inputMenu.mosquitosInput ["Percentage Recovery"];
-		mTransferChance = inputMenu.mosquitosInput ["Transfer Chance"];
-		mBiteRate = inputMenu.mosquitosInput ["Bite Rate"];
+		mNum = (int)Preset.current.mosquitoData ["Population Size"];
+		float mInfectedStart = Preset.current.mosquitoData ["Percentage Infected"];
+		mRecoveryRate = Preset.current.mosquitoData ["Percentage Recovery"];
+		mTransferChance = Preset.current.mosquitoData ["Transfer Chance"];
+		mBiteRate = Preset.current.mosquitoData ["Bite Rate"];
 
-		float density = 1;
-		print (humanPrefab.transform.localScale.x);
-		float spawnSquare = humanPrefab.transform.localScale.x * 4 * Mathf.Sqrt (mNum) / density;
-		UI.InitialiseCamera (50, spawnSquare + 50, spawnSquare/2 + 50);
+		SIR_hInfected = hInfectedStart;
+		SIR_mInfected = mInfectedStart;
+
+		float spawnRadius = humanPrefab.transform.localScale.x * 4 * Mathf.Sqrt (hNum+mNum) / hDensity;
+		UI.InitialiseCamera (50, (int)spawnRadius * 2, (int)spawnRadius);
 
 		for (int i = 0; i < hNum; i++) {
-			bool infected = (float)i/hNum <= hInfectedStart ? true : false;
+			bool infected = (float)(i+1)/hNum <= hInfectedStart ? true : false;
 
 			GameObject temp = (GameObject)Instantiate (humanPrefab);
-			Vector2 circle = Random.insideUnitCircle * spawnSquare;
+			Vector2 circle = Random.insideUnitCircle * spawnRadius;
 			temp.transform.localPosition = new Vector3 (circle.x, circle.y, 0);
 
 			Human human = new Human (temp.transform, infected, hRecoveryRate, hTransferChance, hMoveSpeed);
@@ -355,10 +412,10 @@ public class GameController : MonoBehaviour {
 		}
 
 		for (int i = 0; i < mNum; i++) {
-			bool infected = (float)i/mNum < mInfectedStart ? true : false;
+			bool infected = (float)(i+1)/mNum <= mInfectedStart ? true : false;
 
 			GameObject temp = (GameObject)Instantiate (mosquitoPrefab);
-			Vector2 circle = Random.insideUnitCircle * spawnSquare;
+			Vector2 circle = Random.insideUnitCircle * spawnRadius;
 			temp.transform.localPosition = new Vector3 (circle.x, circle.y, 0);
 
 			Mosquito mosquito = new Mosquito (temp.transform, infected, mRecoveryRate, mTransferChance, mMoveSpeed, mBiteRate);

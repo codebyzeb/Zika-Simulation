@@ -6,7 +6,6 @@ public class Movement : MonoBehaviour {
 
 	//Basic movement variables
 	public float moveSpeed;
-	Vector2 direction;
 	Entity self; //A pointer to the entity which this movement script refers to
 
 	//Variables used for RandomMovement()
@@ -253,6 +252,5 @@ public class Movement : MonoBehaviour {
 			}
 		}
 	}
-
 
 }

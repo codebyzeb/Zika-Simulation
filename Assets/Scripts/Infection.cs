@@ -6,7 +6,6 @@ public class Infection : MonoBehaviour {
 	public bool infected;
 	float transmissionChance; //Chance that this entity gets infected during transfer
 	float recoveryChance;
-	float deathChance;
 	public int ID;
 
 	public void Initialise (float tChance, float rChance, bool infectedTemp = false)
