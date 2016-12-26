@@ -173,9 +173,6 @@ public class GameController : MonoBehaviour {
 	public List<Human> humans;
 	public List<Mosquito> mosquitos;
 
-	public List<Transform> humansTemp;
-	public List<Transform> mosquitosTemp;
-
 	//Simulation variables
 
 	Camera camera;
@@ -238,6 +235,13 @@ public class GameController : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+
+		/*
+		 * If the simulation is active, the MainSimulation() function is called,
+		 * running the simulation. The Control Panel is also updated, as is the 
+		 * Camera to allow zooming and panning.
+		 */
+
 		if (isActive) {
 			MainSimulation ();
 			ControlPanel ();
@@ -246,6 +250,21 @@ public class GameController : MonoBehaviour {
 	}
 
 	void MainSimulation () {
+
+		/*
+		 * The function loops through every human and mosquito to call the Live function
+		 * attached to each Entity.
+		 * There is also a group of periodic "Daily Actions" that occur according to
+		 * a globalTimer variable keeps track of the time. Once it passes a certain
+		 * threshold (dayLength) it operates the daily actions.
+		 * 
+		 * Daily Actions:
+		 * 	- Loop through all mosquitos and humans to start their personal daily actions
+		 * 	- Count all of the infected mosquitos and humans to calculate the percentage infected for each
+		 * 	- Reset the global timer
+		 *	
+		 */ 
+
 		globalTimer += Time.deltaTime*gameSpeed;
 		if (globalTimer > dayLength) {
 			UpdateEquations ();
@@ -279,6 +298,12 @@ public class GameController : MonoBehaviour {
 	}
 
 	void UpdateEquations () {
+
+		/*
+		 * Updates the SIR data, using the equations detailed in the Analysis 1.1.5 and Design 2.2.3
+		 * Only updates after the first run to ensure the equations are kept inline with the simulation.
+		 */
+
 		if (!firstRun) {
 			SIR_hInfected += (mNum / hNum) * mBiteRate * hTransferChance * SIR_mInfected * (1 - SIR_hInfected) - hRecoveryRate * SIR_hInfected;
 			SIR_mInfected += mBiteRate * mTransferChance * SIR_hInfected * (1 - SIR_mInfected) - mRecoveryRate * SIR_mInfected;
@@ -288,6 +313,13 @@ public class GameController : MonoBehaviour {
 	}
 
 	void UpdateEquationsText () {
+
+		/*
+		 * Part of the main simultion interface, updates the text in the equations comparison panel to
+		 * display the percentage infected mosquitos and humans as calculated by the equations and the 
+		 * percentage difference between the two.
+		 */
+
 		equationText.text = "Percentage Infected Humans: " + (Mathf.Round (SIR_hInfected * 1000) / 10).ToString () + "%\nPercentage Infected Mosquitos: " + (Mathf.Round (SIR_mInfected * 1000) / 10).ToString () + "%";
 		simulationText.text = "Percentage Infected Humans: " + (Mathf.Round (SIM_hInfected * 1000) / 10).ToString () + "%\nPercentage Infected Mosquitos: " + (Mathf.Round (SIM_mInfected * 1000) / 10).ToString () + "%";
 		errorText.text = "Percentage Difference Humans: " + Mathf.Abs (Mathf.Round ((SIM_hInfected - SIR_hInfected) * 1000) / 10).ToString () + "%\nPercentage Difference Mosquitos: " + Mathf.Abs (Mathf.Round ((SIM_mInfected - SIR_mInfected) * 1000) / 10).ToString () + "%";
@@ -300,6 +332,7 @@ public class GameController : MonoBehaviour {
 		gameSpeed += amount;
 
 		//Clamp gameSpeed to be between 0 and maxGameSpeed
+
 		if (gameSpeed < 0) {
 			gameSpeed = 0;
 		} else if (gameSpeed > maxGameSpeed) {
@@ -327,12 +360,33 @@ public class GameController : MonoBehaviour {
 	}
 
 	public void SetActivity (bool active) {
+
+		//Sets the activity of the simulation to True or False
+
 		isActive = active;
 	}
 
 	public void StartSimulation () {
+
+		/*
+		 * Function that initialises and begins the simulation.
+		 * Processes:
+		 * 	1) Clears all entities currently in operation.
+		 * 	2) Sets the parameters of the simulation according to the parameteres
+		 * 		chosen by the user.
+		 * 	3) Initialises the SIR equation parameters
+		 * 	4) Camera is initialised using a calculated spawnRadius parameter based
+		 * 		on the number of mosquitos and humans and the density parameter.
+		 * 	5) Loops through hNum to create each human and place them in the 2D world space.
+		 * 	6) Loops through mNum to create each mosquito and place them in the 2D world space.
+		 * 	7) The simulation is set to active.
+		 */
+
+
+		//1
 		ClearEntities ();
 
+		//2
 		hNum = (int)Preset.current.humanData ["Population Size"];
 		float hInfectedStart = Preset.current.humanData ["Percentage Infected"];
 		hRecoveryRate = Preset.current.humanData ["Percentage Recovery"];
@@ -345,14 +399,15 @@ public class GameController : MonoBehaviour {
 		mTransferChance = Preset.current.mosquitoData ["Transfer Chance"];
 		mBiteRate = Preset.current.mosquitoData ["Bite Rate"];
 
-		Preset.current.PrintAllValues ();
-
+		//3
 		SIR_hInfected = hInfectedStart;
 		SIR_mInfected = mInfectedStart;
 
+		//4
 		float spawnRadius = humanPrefab.transform.localScale.x * 4 * Mathf.Sqrt (hNum+mNum) / hDensity;
 		UI.InitialiseCamera (50, (int)spawnRadius * 2, (int)spawnRadius);
 
+		//5
 		for (int i = 0; i < hNum; i++) {
 			bool infected = (float)(i+1)/hNum <= hInfectedStart ? true : false;
 
@@ -365,6 +420,7 @@ public class GameController : MonoBehaviour {
 			humans.Add (human);
 		}
 
+		//6
 		for (int i = 0; i < mNum; i++) {
 			bool infected = (float)(i+1)/mNum <= mInfectedStart ? true : false;
 
@@ -377,11 +433,17 @@ public class GameController : MonoBehaviour {
 			mosquitos.Add (mosquito);
 		}
 
+		//7
 		SetActivity (true);
 
 	}
 
 	void ClearEntities () {
+
+		/*
+		 * Deletes all entities currently in use.
+		 */
+
 		foreach (Human human in humans) {
 			Destroy (human.transform.gameObject);
 		}
@@ -393,6 +455,12 @@ public class GameController : MonoBehaviour {
 	}
 		
 	public void ToggleEquationsPanel () {
+
+		/*
+		 * Toggles the equations panel by setting it to active
+		 * or inactive and changing the text on the button.
+		 */
+
 		if (equationPanel.activeSelf) {
 			equationPanel.SetActive (false);
 			equationsPanelButtonText.text = "Show Comparison"; 
@@ -405,7 +473,10 @@ public class GameController : MonoBehaviour {
 
 	void ControlPanel() {
 
-		//Sets text of centre two buttons
+		/*
+		 * Changes the text of the center two control panel buttons.
+		 * Also toggles the menu panel if the escape key is pressed.
+		 */
 
 		speedText.text = gameSpeed.ToString() + "x";
 		pauseText.text = (paused) ? "Play" : "Pause";
@@ -415,10 +486,16 @@ public class GameController : MonoBehaviour {
 	}
 
 	public void ToggleMenuPanel () {
+
+		//Toggles the activity of the pause menu panel
+
 		menuPanel.SetActive (!menuPanel.activeSelf);
 	}
 
 	public void Quit() {
+
+		//Quits the application
+
 		Application.Quit ();
 	}
 

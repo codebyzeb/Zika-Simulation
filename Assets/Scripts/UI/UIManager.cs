@@ -24,8 +24,8 @@ public class UIManager : MonoBehaviour {
 		 * Initialises camera
 		*/
 
-		minZoom = 100;
-		maxZoom = 2000;
+		minZoom = minZoomTemp;
+		maxZoom = maxZoomTemp;
 		cam = GetComponent<Camera> ();
 		defaultZoom = defaultZoomTemp;
 		cam.orthographicSize = defaultZoomTemp;

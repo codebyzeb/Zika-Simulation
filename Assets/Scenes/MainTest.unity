@@ -4244,6 +4244,17 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
+      - m_Target: {fileID: 753440287}
+        m_MethodName: SetActivity
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
 --- !u!114 &627004959
@@ -5013,8 +5024,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   humans: []
   mosquitos: []
-  humansTemp: []
-  mosquitosTemp: []
   gameSpeed: 0
   savedGameSpeed: 0
   maxGameSpeed: 0
@@ -5041,12 +5050,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8461959276c4d43d4968292d9d029a91, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cam: {fileID: 0}
-  minZoom: 0
-  maxZoom: 0
-  defaultZoom: 0
-  mousePosOriginal: {x: 0, y: 0, z: 0}
-  cameraMoveSpeed: 0
 --- !u!114 &775294531
 MonoBehaviour:
   m_ObjectHideFlags: 0
