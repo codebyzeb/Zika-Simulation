@@ -131,7 +131,7 @@ public class InputManager : MonoBehaviour {
 
 
 		if (SavePanel.activeSelf) {
-			if (SaveField.text == "" || SaveLoad.presets.ContainsKey (SaveField.name)) {
+			if (SaveField.text == "" || SaveLoad.presets.ContainsKey (SaveField.text)) {
 				SavePresetName.interactable = false;
 			} else {
 				SavePresetName.interactable = true;
@@ -214,12 +214,14 @@ public class InputManager : MonoBehaviour {
 		}
 	}
 
-	public void SaveCurrentPreset() {
-		string presetName = SaveField.text;
-		SaveLoad.Save (presetName, Preset.current);
-		dropdown.options.Add (new Dropdown.OptionData (presetName));
-		dropdown.value = dropdown.options.Count - 1;
-		dropdown.RefreshShownValue ();
+	public void SaveCurrentPreset(bool cancel) {
+		if (!cancel) {
+			string presetName = SaveField.text;
+			SaveLoad.Save (presetName, Preset.current);
+			dropdown.options.Add (new Dropdown.OptionData (presetName));
+			dropdown.value = dropdown.options.Count - 1;
+			dropdown.RefreshShownValue ();
+		}
 
 		SetAllInteractable (true);
 		SavePanel.SetActive (false);
@@ -272,7 +274,7 @@ public class InputManager : MonoBehaviour {
 		mosquitoNum.text = load.mosquitoData ["Population Size"].ToString();
 	}
 
-	void SetAllInteractable (bool val) {
+	public void SetAllInteractable (bool val) {
 		foreach (Slider slider in humansInputSliders.Values) {
 			slider.interactable = val;
 		}

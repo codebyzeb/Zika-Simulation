@@ -191,12 +191,10 @@ public class GameController : MonoBehaviour {
 
 	//Simulation data
 
-	int hNum;
-	float hTransferChance, hRecoveryRate;
+	float hNum, hTransferChance, hRecoveryRate;
 	float hMoveSpeed = 5;
 	float hDensity;
-	int mNum;
-	float mTransferChance, mRecoveryRate, mBiteRate;
+	float mNum, mTransferChance, mRecoveryRate, mBiteRate;
 	float mMoveSpeed = 20;
 
 	//Equation data
@@ -205,18 +203,14 @@ public class GameController : MonoBehaviour {
 	float SIM_mInfected;
 	float SIR_hInfected;
 	float SIR_mInfected;
+	static bool firstRun = true;
 
 	//UI elements
 
-	public Button pauseButton, fasterButton, slowerButton, speedButton;
 	public Text speedText, pauseText;
 	UIManager UI;
-	public InputManager inputMenu;
-	public GameObject equationPanel;
-	public Text equationsPanelButtonText;
-	public Text equationText;
-	public Text simulationText;
-	public Text errorText;
+	public GameObject equationPanel, menuPanel;
+	public Text equationsPanelButtonText, equationText, simulationText, errorText;
 
 	// Initialisation of simulation
 	void Start () {
@@ -234,35 +228,11 @@ public class GameController : MonoBehaviour {
 		globalTimer = 0;
 		dayLength = 5;
 
-		OldInitialisation ();
-
 		/*
 		 * UI Initialisation
 		 */
 
-		speedText = speedButton.GetComponentInChildren<Text> ();
-		pauseText = pauseButton.GetComponentInChildren<Text> ();
 		UI = GetComponent<UIManager> ();
-
-	}
-
-	void OldInitialisation () {
-
-		/*
-		 * Each transform in humanTemp initialised as a Human object
-		 * and added to the list humans, then
-		 * each transform in mosquitoTemp intialised as a Mosquito object
-		 * and added to the list mosquitos.
-		 */
-		
-		foreach (Transform humanTemp in humansTemp) {
-			Human human = new Human (humanTemp);
-			humans.Add (human);
-		}
-		foreach (Transform mosquitoTemp in mosquitosTemp) {
-			Mosquito mosquito = new Mosquito (mosquitoTemp);
-			mosquitos.Add (mosquito);
-		}
 
 	}
 	
@@ -297,10 +267,6 @@ public class GameController : MonoBehaviour {
 			SIM_hInfected = numInfectedHumans / hNum;
 			SIM_mInfected = numInfectedMosquitos / mNum;
 
-			equationText.text = "Percentage Infected Humans: " + (Mathf.Round (SIR_hInfected * 1000) / 10).ToString () + "%\nPercentage Infected Mosquitos: " + (Mathf.Round (SIR_mInfected * 1000) / 10).ToString () + "%";
-			simulationText.text = "Percentage Infected Humans: " + (Mathf.Round (SIM_hInfected * 1000) / 10).ToString () + "%\nPercentage Infected Mosquitos: " + (Mathf.Round (SIM_mInfected * 1000) / 10).ToString () + "%";
-			errorText.text = "Percentage Difference Humans: " + Mathf.Abs (Mathf.Round ((SIM_hInfected - SIR_hInfected) * 1000) / 10).ToString () + "%\nPercentage Difference Mosquitos: " + Mathf.Abs (Mathf.Round ((SIM_mInfected - SIR_mInfected) * 1000) / 10).ToString () + "%";
-
 			globalTimer = 0;
 		}
 
@@ -312,7 +278,6 @@ public class GameController : MonoBehaviour {
 		}
 	}
 
-	static bool firstRun = true;
 	void UpdateEquations () {
 		if (!firstRun) {
 			SIR_hInfected += (mNum / hNum) * mBiteRate * hTransferChance * SIR_mInfected * (1 - SIR_hInfected) - hRecoveryRate * SIR_hInfected;
@@ -322,23 +287,10 @@ public class GameController : MonoBehaviour {
 		}
 	}
 
-	public void ToggleEquationsPanel () {
-		if (equationPanel.activeSelf) {
-			equationPanel.SetActive (false);
-			equationsPanelButtonText.text = "Show Comparison"; 
-		}
-		else {
-			equationPanel.SetActive (true);
-			equationsPanelButtonText.text = "Hide Comparison"; 
-		}
-	}
-
-	void ControlPanel() {
-
-		//Sets text of centre two buttons
-
-		speedText.text = gameSpeed.ToString() + "x";
-		pauseText.text = (paused) ? "Play" : "Pause";
+	void UpdateEquationsText () {
+		equationText.text = "Percentage Infected Humans: " + (Mathf.Round (SIR_hInfected * 1000) / 10).ToString () + "%\nPercentage Infected Mosquitos: " + (Mathf.Round (SIR_mInfected * 1000) / 10).ToString () + "%";
+		simulationText.text = "Percentage Infected Humans: " + (Mathf.Round (SIM_hInfected * 1000) / 10).ToString () + "%\nPercentage Infected Mosquitos: " + (Mathf.Round (SIM_mInfected * 1000) / 10).ToString () + "%";
+		errorText.text = "Percentage Difference Humans: " + Mathf.Abs (Mathf.Round ((SIM_hInfected - SIR_hInfected) * 1000) / 10).ToString () + "%\nPercentage Difference Mosquitos: " + Mathf.Abs (Mathf.Round ((SIM_mInfected - SIR_mInfected) * 1000) / 10).ToString () + "%";
 	}
 
 	public void IncreaseGameSpeed (float amount) {
@@ -393,6 +345,8 @@ public class GameController : MonoBehaviour {
 		mTransferChance = Preset.current.mosquitoData ["Transfer Chance"];
 		mBiteRate = Preset.current.mosquitoData ["Bite Rate"];
 
+		Preset.current.PrintAllValues ();
+
 		SIR_hInfected = hInfectedStart;
 		SIR_mInfected = mInfectedStart;
 
@@ -423,7 +377,7 @@ public class GameController : MonoBehaviour {
 			mosquitos.Add (mosquito);
 		}
 
-		isActive = true;
+		SetActivity (true);
 
 	}
 
@@ -436,6 +390,36 @@ public class GameController : MonoBehaviour {
 			Destroy (mosquito.transform.gameObject);
 		}
 		mosquitos.Clear ();
+	}
+		
+	public void ToggleEquationsPanel () {
+		if (equationPanel.activeSelf) {
+			equationPanel.SetActive (false);
+			equationsPanelButtonText.text = "Show Comparison"; 
+		}
+		else {
+			equationPanel.SetActive (true);
+			equationsPanelButtonText.text = "Hide Comparison"; 
+		}
+	}
+
+	void ControlPanel() {
+
+		//Sets text of centre two buttons
+
+		speedText.text = gameSpeed.ToString() + "x";
+		pauseText.text = (paused) ? "Play" : "Pause";
+		if (Input.GetKeyDown ("escape")) {
+			ToggleMenuPanel ();
+		}
+	}
+
+	public void ToggleMenuPanel () {
+		menuPanel.SetActive (!menuPanel.activeSelf);
+	}
+
+	public void Quit() {
+		Application.Quit ();
 	}
 
 }
