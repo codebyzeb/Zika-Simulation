@@ -19,7 +19,7 @@ public class Entity {
 	public Entity(Transform transformTemp, bool infected, float recoveryRate, float transferChance, float moveSpeed)
 	{
 		transform = transformTemp;
-		//Creates an ID for the entity
+		//Creates a unique ID for each entity
 		ID = tempID;
 		tempID++;
 
@@ -268,6 +268,7 @@ public class GameController : MonoBehaviour {
 		globalTimer += Time.deltaTime*gameSpeed;
 		if (globalTimer > dayLength) {
 			UpdateEquations ();
+			UpdateEquationsText ();
 
 			float numInfectedMosquitos = 0;
 			float numInfectedHumans = 0;

@@ -1278,7 +1278,7 @@ RectTransform:
   m_Children:
   - {fileID: 1046194451}
   m_Father: {fileID: 1737251479}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: -131.5, y: -44}
@@ -3236,7 +3236,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 'Percentage Error:'
+  m_Text: 'Percentage Difference:'
 --- !u!222 &455480994
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -4244,17 +4244,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 753440287}
-        m_MethodName: SetActivity
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
 --- !u!114 &627004959
@@ -4431,7 +4420,7 @@ RectTransform:
   - {fileID: 2118937695}
   - {fileID: 2011109891}
   m_Father: {fileID: 1737251479}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: -0.5, y: -25.5}
@@ -4456,7 +4445,7 @@ MonoBehaviour:
   m_Inertia: 1
   m_DecelerationRate: 0.5
   m_ScrollSensitivity: 4
-  m_Viewport: {fileID: 0}
+  m_Viewport: {fileID: 640763001}
   m_HorizontalScrollbar: {fileID: 0}
   m_VerticalScrollbar: {fileID: 2118937696}
   m_HorizontalScrollbarVisibility: 0
@@ -5133,7 +5122,7 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 67850748}
   m_RootOrder: 0
-  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 0.6807538}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 20}
@@ -8491,10 +8480,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 2011109891}
   m_RootOrder: 0
-  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 0.179}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -0.5, y: -154.5}
-  m_SizeDelta: {x: 0, y: 309}
+  m_AnchoredPosition: {x: -14, y: -157.46}
+  m_SizeDelta: {x: -27, y: 311.93}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1265789679
 MonoBehaviour:
@@ -8516,8 +8505,8 @@ MonoBehaviour:
     m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_FontData:
-    m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
-    m_FontSize: 49
+    m_Font: {fileID: 12800000, guid: 33b47ef81dac44991b92c8f1201ced22, type: 3}
+    m_FontSize: 30
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 10
@@ -8528,55 +8517,29 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 'Bunch of text
-
-    more text
-
-    more
-
-    A bunch of text
-
-    more text
-
-    more text
-
-    A bunch of text
-
-    more text
-
-    more text
-
-    A bunch of text
-
-    more text
-
-    Bunch of text
-
-    more text
-
-    more
-
-    A bunch of text
-
-    more text
-
-    more text
-
-    A bunch of text
-
-    more text
-
-    more text
-
-    A bunch of text
-
-    more text
-
-    A bunch of text
-
-    more text
-
-    more text'
+  m_Text: "Brief:\n\nThis application, developed by Z\xE9bulon Goriely seeks to demonstrate
+    the effect of parameters on the spread of a virus within a simple agent-based
+    model. \nThe model consists of mosquitos (small circles) and humans (large circles).
+    These entities move within the simulation and disease is transmitted through mosquitos
+    biting humans. Infection is represeted in red, healthy entities are white.\n\nData:\n\nData
+    concerning the simulation when run is accessible in a panel opened in the top
+    left corner. This panel shows the percentage of infected mosquitos and humans
+    in the simulation compared to the percentage of infected mosquitos and humans
+    predicted by an SIR differential equation model operating using the same inputted
+    parameters as the simulation.\n\nParameters:\n\nNumber of humans: The number of
+    humans in the simulation.\nNumber of mosquitos: The number of mosquitos in the
+    simulation.\nPercentage Infected: The percentage of humans or mosquitos that begin
+    infected.\nRecovery Rate: The probability that an entity will recover within a
+    discrete time period.\nH->M Transfer: The probability that when an uninfected
+    human is bitten by an infected mosquito, the human will become infected.\nM->H
+    Transfer: The probability that when an infected human is bitten by an uninfected
+    mosquito, the mosquito will become infected.\nDensity: A location parameter determining
+    the density of the humans upon creation of the simulation.\nBite Rate: The probability
+    that a mosquito will bite a human within a discrete time period.\n\nPresets:\n\nThis
+    application allows a series of parameters to be saved as a preset. These presets
+    will remain between runs of the application and can be deleted and created according
+    to the will of the user. Simply press \"Save Preset\" in the Create Simulation
+    menu to create a new once your parameters have been defined."
 --- !u!222 &1265789680
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -10980,6 +10943,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
+  - {fileID: 2093347697}
   - {fileID: 640763001}
   - {fileID: 166042014}
   m_Father: {fileID: 1678409137}
@@ -12708,6 +12672,7 @@ GameObject:
   - 224: {fileID: 2011109891}
   - 222: {fileID: 2011109893}
   - 114: {fileID: 2011109892}
+  - 114: {fileID: 2011109894}
   m_Layer: 5
   m_Name: Content
   m_TagString: Untagged
@@ -12731,8 +12696,8 @@ RectTransform:
   m_RootOrder: 1
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchoredPosition: {x: -0.25, y: -596}
+  m_SizeDelta: {x: 0, y: 1192}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2011109892
 MonoBehaviour:
@@ -12767,6 +12732,24 @@ CanvasRenderer:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 2011109890}
+--- !u!114 &2011109894
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2011109890}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1679637790, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_IgnoreLayout: 0
+  m_MinWidth: -1
+  m_MinHeight: 0
+  m_PreferredWidth: -1
+  m_PreferredHeight: 240
+  m_FlexibleWidth: -1
+  m_FlexibleHeight: -1
 --- !u!1 &2032613751
 GameObject:
   m_ObjectHideFlags: 0
@@ -13216,6 +13199,80 @@ CanvasRenderer:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 2079284063}
+--- !u!1 &2093347696
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 4
+  m_Component:
+  - 224: {fileID: 2093347697}
+  - 222: {fileID: 2093347699}
+  - 114: {fileID: 2093347698}
+  m_Layer: 5
+  m_Name: Text (3)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &2093347697
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2093347696}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 1737251479}
+  m_RootOrder: 0
+  m_AnchorMin: {x: 0.5, y: 1}
+  m_AnchorMax: {x: 0.5, y: 1}
+  m_AnchoredPosition: {x: -0.5, y: -137.7}
+  m_SizeDelta: {x: 1120, y: 289}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &2093347698
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2093347696}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 708705254, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 0.96318454, b: 0.75735295, a: 1}
+  m_RaycastTarget: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
+      Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+  m_FontData:
+    m_Font: {fileID: 12800000, guid: ef8a96c11009b4d03a50b9f823995d14, type: 3}
+    m_FontSize: 70
+    m_FontStyle: 1
+    m_BestFit: 0
+    m_MinSize: 10
+    m_MaxSize: 76
+    m_Alignment: 4
+    m_AlignByGeometry: 0
+    m_RichText: 1
+    m_HorizontalOverflow: 0
+    m_VerticalOverflow: 0
+    m_LineSpacing: 0.62
+  m_Text: About
+--- !u!222 &2093347699
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2093347696}
 --- !u!1 &2118937694
 GameObject:
   m_ObjectHideFlags: 0
@@ -13290,9 +13347,9 @@ MonoBehaviour:
   m_Interactable: 1
   m_TargetGraphic: {fileID: 788817644}
   m_HandleRect: {fileID: 788817643}
-  m_Direction: 3
-  m_Value: 0
-  m_Size: 1
+  m_Direction: 2
+  m_Value: 1
+  m_Size: 0.31924614
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
