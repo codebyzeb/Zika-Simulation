@@ -18,6 +18,14 @@ public class Entity {
 
 	public Entity(Transform transformTemp, bool infected, float recoveryRate, float transferChance, float moveSpeed)
 	{
+
+		/*
+		 * The constructor for entity where five parameters are defined.
+		 * Creates an ID, sets the object's transform (the unity sprite which it is associated to)
+		 * and initialises its sprite, movement class (compositionally aggregated) and 
+		 * infection class (also compositionally aggregated).
+		 */ 
+
 		transform = transformTemp;
 		//Creates a unique ID for each entity
 		ID = tempID;
@@ -36,7 +44,12 @@ public class Entity {
 	}
 
 	public Entity (Transform transformTemp) {
-		
+
+		/*
+		 * An alternative constructor for when additional parameters are not defined.
+		 * Creates an entity with default parameters.
+		 */ 
+
 		transform = transformTemp;
 
 		//Creates an ID for the entity
@@ -58,6 +71,13 @@ public class Entity {
 		
 	public void Live(float gameSpeed) {
 
+		/*
+		 * The function called every frame for each entity,
+		 * carries out the actions that define the entity by calling
+		 * dailyActions when a timer has been reached and ManageGraphics()
+		 * during ever frame.
+		 */ 
+
 		if (startOfDay) {
 			delayTimer += Time.deltaTime*gameSpeed;
 			if (delayTimer >= 0) {
@@ -70,15 +90,32 @@ public class Entity {
 	}
 
 	public void startDailyActionsTimer(float dayLength) {
+
+		/*
+		 * Starts the timer for daily actions, set
+		 * randomly according to dayLength so that each entity
+		 * carries out its actions at different times.
+		 */ 
+
 		startOfDay = true;
 		delayTimer = -(Random.Range (0, 0.5f * dayLength));
 	}
 
 	protected void doDailyActions () {
+
+		/*
+		 * The daily actions for the entity, tries to recover the entity.
+		 */ 
+
 		infection.tryRecovery ();
 	}
 
 	public void ManageGraphics() {
+
+		/*
+		 * Sets the infection according to the infection status of the entity.
+		 */ 
+
 		sprite.color = (infection.infected) ? Color.red : Color.white;
 	}
 
@@ -86,6 +123,13 @@ public class Entity {
 
 [System.Serializable]
 public class Human : Entity {
+
+	/*
+	 * The Human class inherits directly from Entity, using the same functions and simply 
+	 * overriding the Live() function using dynamic polymorphism (since function is overriden using
+	 * the same identifier). The new function simply adds random movement,
+	 * keeping the base functionality.
+	 */ 
 
 	public Human (Transform transformTemp, bool infected, float recoveryRate, float transferChance, float moveSpeed) : base (transformTemp, infected, recoveryRate, transferChance, moveSpeed) { 
 		
@@ -104,6 +148,14 @@ public class Human : Entity {
 
 [System.Serializable]
 public class Mosquito : Entity {
+
+	/*
+	 * The Mosquito class inherits directly from Entity, adding a new functions and 
+	 * overriding the Live() and constructor functions. Mosquitos have additional variables 
+	 * to do with biting; biteRate decides the probability that a bite occurs, bitePhase
+	 * keeps track of the biting process and biteLength determines how long the mosquito
+	 * will bite a human for.
+	 */ 
 
 	public float biteRate;
 	private int bitePhase;
